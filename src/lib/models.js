@@ -2092,7 +2092,58 @@ export const t2iModels = [
   }
 ];
 
-export const getModelById = (id) => t2iModels.find(m => m.id === id);
+
+// ==========================================
+// Free Text-to-Image Models (no API key)
+// ==========================================
+// Served by the free Pollinations.ai backend (see src/lib/freeapi.js).
+// These appear in the Image Studio picker when no Muapi API key is set.
+export const freeT2iModels = [
+  {
+    "id": "free-flux",
+    "name": "Flux (Free)",
+    "endpoint": "free",
+    "inputs": {
+      "prompt": {
+        "description": "Text prompt describing the image you want.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "aspect_ratio": {
+        "enum": ["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "4:5", "5:4", "21:9"],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "Aspect ratio of the output image.",
+        "default": "1:1"
+      }
+    }
+  },
+  {
+    "id": "free-turbo",
+    "name": "Turbo (Free, fast)",
+    "endpoint": "free",
+    "inputs": {
+      "prompt": {
+        "description": "Text prompt describing the image you want.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "aspect_ratio": {
+        "enum": ["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "4:5", "5:4", "21:9"],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "Aspect ratio of the output image.",
+        "default": "1:1"
+      }
+    }
+  }
+];
+
+export const getModelById = (id) => (t2iModels.find(m => m.id === id) || freeT2iModels.find(m => m.id === id));
 
 export const getAspectRatiosForModel = (modelId) => {
   const model = getModelById(modelId);

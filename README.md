@@ -1,6 +1,11 @@
 # Open Higgsfield AI — Open-Source Alternative to Higgsfield AI
 
-> **The free, open-source alternative to Higgsfield AI.** Generate AI images and videos using 200+ state-of-the-art models — without the closed ecosystem or subscription fees.
+> **Actually-free AI image generation.** Text-to-image works out of the box with no API key, no signup — powered by the free Pollinations.ai backend (Flux & Turbo models). Video, lip-sync, and image-editing studios optionally use a Muapi.ai API key if you have one.
+
+## 🆓 What's free
+
+- **Image Studio (text-to-image):** 100% free, no key required. Pick "Flux (Free)" or "Turbo (Free, fast)" and generate.
+- **Video / Cinema / Lip Sync / image editing:** require a Muapi.ai API key (add it in Settings) — those models cost money to run and there's no free lunch for video yet.
 
 ## 🌐 Try it Online — No Install Required
 

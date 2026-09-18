@@ -1,9 +1,14 @@
 import { getModelById, getVideoModelById, getI2IModelById, getI2VModelById, getV2VModelById, getLipSyncModelById } from './models.js';
+import { freeapi } from './freeapi.js';
 
 export class MuapiClient {
     constructor() {
         // Ideally user provides this in settings
         this.baseUrl = import.meta.env.DEV ? '' : 'https://api.muapi.ai';
+    }
+
+    hasKey() {
+        return !!(window.__MUAPI_KEY__ || localStorage.getItem('muapi_key'));
     }
 
     getKey() {
@@ -25,6 +30,12 @@ export class MuapiClient {
      * @param {string} [params.image_url] - If present, treats as Image-to-Image
      */
     async generateImage(params) {
+        // Free mode: no API key set and plain text-to-image -> Pollinations backend.
+        // Image-to-image still needs a Muapi key (freeapi throws a friendly error).
+        if (!this.hasKey() && !params.image_url) {
+            return freeapi.generateImage(params);
+        }
+
         const key = this.getKey();
 
         // Resolve endpoint from model definition

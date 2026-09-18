@@ -1,6 +1,6 @@
 import { muapi } from '../lib/muapi.js';
 import {
-    t2iModels, getAspectRatiosForModel, getResolutionsForModel, getQualityFieldForModel,
+    t2iModels, freeT2iModels, getAspectRatiosForModel, getResolutionsForModel, getQualityFieldForModel,
     i2iModels, getAspectRatiosForI2IModel, getResolutionsForI2IModel, getQualityFieldForI2IModel,
     getMaxImagesForI2IModel
 } from '../lib/models.js';
@@ -14,7 +14,11 @@ export function ImageStudio() {
     container.className = 'w-full h-full flex flex-col items-center justify-center bg-app-bg relative p-4 md:p-6 overflow-y-auto custom-scrollbar overflow-x-hidden';
 
     // --- State ---
-    const defaultModel = t2iModels[0];
+    // Free mode: when no Muapi key is set, the picker offers the free
+    // (Pollinations-backed) models instead of the paid Muapi catalog.
+    const isFreeMode = () => !localStorage.getItem('muapi_key');
+    const activeT2IModels = () => isFreeMode() ? freeT2iModels : t2iModels;
+    const defaultModel = activeT2IModels()[0];
     let selectedModel = defaultModel.id;
     let selectedModelName = defaultModel.name;
     let selectedAr = defaultModel.inputs?.aspect_ratio?.default || '1:1';
@@ -41,7 +45,7 @@ export function ImageStudio() {
     // Quick tools panel state
     let showToolsPanel = false;
 
-    const getCurrentModels = () => imageMode ? i2iModels : t2iModels;
+    const getCurrentModels = () => imageMode ? i2iModels : activeT2IModels();
     const getCurrentAspectRatios = (id) => imageMode ? getAspectRatiosForI2IModel(id) : getAspectRatiosForModel(id);
     const getCurrentResolutions = (id) => imageMode ? getResolutionsForI2IModel(id) : getResolutionsForModel(id);
     const getCurrentQualityField = (id) => imageMode ? getQualityFieldForI2IModel(id) : getQualityFieldForModel(id);
@@ -112,8 +116,8 @@ export function ImageStudio() {
         onClear: () => {
             uploadedImageUrls = [];
             imageMode = false;
-            selectedModel = t2iModels[0].id;
-            selectedModelName = t2iModels[0].name;
+            selectedModel = activeT2IModels()[0].id;
+            selectedModelName = activeT2IModels()[0].name;
             selectedAr = getAspectRatiosForModel(selectedModel)[0];
             document.getElementById('model-btn-label').textContent = selectedModelName;
             document.getElementById('ar-btn-label').textContent = selectedAr;
@@ -1016,8 +1020,8 @@ export function ImageStudio() {
         picker.setMaxImages(1);
         // Reset to t2i mode
         imageMode = false;
-        selectedModel = t2iModels[0].id;
-        selectedModelName = t2iModels[0].name;
+        selectedModel = activeT2IModels()[0].id;
+        selectedModelName = activeT2IModels()[0].name;
         selectedAr = getAspectRatiosForModel(selectedModel)[0];
         document.getElementById('model-btn-label').textContent = selectedModelName;
         document.getElementById('ar-btn-label').textContent = selectedAr;
@@ -1046,7 +1050,8 @@ export function ImageStudio() {
         }
 
         const apiKey = localStorage.getItem('muapi_key');
-        if (!apiKey) {
+        if (!apiKey && imageMode) {
+            // Text-to-image is free (no key needed); image editing needs a Muapi key.
             AuthModal(() => generateBtn.click());
             return;
         }

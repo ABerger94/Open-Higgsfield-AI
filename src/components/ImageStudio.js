@@ -878,6 +878,17 @@ export function ImageStudio() {
             canvasControls.classList.remove('opacity-0');
             canvasControls.classList.add('opacity-100');
         };
+        resultImg.onerror = () => {
+            // Restore the hero so the page doesn't look broken after a failed load
+            hero.classList.remove('hidden', 'opacity-0', 'scale-95', '-translate-y-10', 'pointer-events-none');
+            promptWrapper.classList.remove('hidden');
+            canvas.classList.add('opacity-0', 'pointer-events-none');
+            const btn = document.getElementById('generate-btn');
+            if (btn) {
+                btn.innerHTML = `Image failed to load — free provider may be busy. Wait a bit and retry.`;
+                setTimeout(() => { btn.innerHTML = `Generate ✨`; }, 5000);
+            }
+        };
     };
 
     // --- Helper: Add to history ---

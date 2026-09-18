@@ -62,18 +62,11 @@ export class FreeClient {
 
         console.log('[FreeAPI] Generating:', url.slice(0, 120) + '…');
 
-        // The URL itself triggers generation; the <img> element streams it in.
-        // Do a quick HEAD-style sanity check so we fail fast on provider errors
-        // instead of hanging the UI on a broken image.
-        const probe = await fetch(url, { method: 'GET' });
-        if (!probe.ok) {
-            const errText = await probe.text().catch(() => '');
-            throw new Error(`Free generation failed: ${probe.status} ${errText.slice(0, 80)}`);
-        }
-        // NOTE: probe.body is intentionally not consumed here — the browser
-        // re-requests the same URL when the <img> loads it (cached by the
-        // provider's CDN for identical prompt+seed URLs).
-
+        // The URL itself triggers generation on first request; the <img>
+        // element streams it in and reports success/failure via
+        // onload/onerror (see showImageInCanvas). No fetch probe here:
+        // it doubles bandwidth and its failure modes differ from <img>,
+        // which is the load that actually matters.
         return { url, id: `free-${Date.now()}` };
     }
 }

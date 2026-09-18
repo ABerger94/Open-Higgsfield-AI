@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { generateImage, generateI2I, uploadFile } from "../muapi.js";
 import {
   t2iModels,
+  freeT2iModels,
   i2iModels,
   getAspectRatiosForModel,
   getResolutionsForModel,
@@ -592,15 +593,18 @@ function SimpleDropdown({ title, options, selected, onSelect, onClose }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function ImageStudio({ apiKey, onGenerationComplete, historyItems }) {
+  // Free mode: no Muapi key -> Pollinations-backed free models in the picker.
+  const isFreeMode = !apiKey;
+  const defaultT2IModel = () => (isFreeMode ? freeT2iModels : t2iModels)[0];
   // ── Model / mode state ──────────────────────────────────────────────────
   const [imageMode, setImageMode] = useState(false); // false=t2i, true=i2i
-  const [selectedModelId, setSelectedModelId] = useState(t2iModels[0].id);
-  const [selectedModelName, setSelectedModelName] = useState(t2iModels[0].name);
+  const [selectedModelId, setSelectedModelId] = useState(defaultT2IModel().id);
+  const [selectedModelName, setSelectedModelName] = useState(defaultT2IModel().name);
   const [selectedAr, setSelectedAr] = useState(
-    t2iModels[0].inputs?.aspect_ratio?.default || "1:1"
+    defaultT2IModel().inputs?.aspect_ratio?.default || "1:1"
   );
   const [selectedQuality, setSelectedQuality] = useState(() => {
-    const resolutions = getResolutionsForModel(t2iModels[0].id);
+    const resolutions = getResolutionsForModel(defaultT2IModel().id);
     return resolutions[0] || null;
   });
   const [maxImages, setMaxImages] = useState(1);
@@ -649,7 +653,7 @@ export default function ImageStudio({ apiKey, onGenerationComplete, historyItems
   };
 
   // ── Derived: current model lists & helpers ───────────────────────────────
-  const currentModels = imageMode ? i2iModels : t2iModels;
+  const currentModels = imageMode ? i2iModels : (isFreeMode ? freeT2iModels : t2iModels);
   const currentAspectRatios = imageMode
     ? getAspectRatiosForI2IModel(selectedModelId)
     : getAspectRatiosForModel(selectedModelId);
@@ -685,7 +689,7 @@ export default function ImageStudio({ apiKey, onGenerationComplete, historyItems
   const handleUploadClear = useCallback(() => {
     setUploadedImageUrls([]);
     setImageMode(false);
-    const firstT2I = t2iModels[0];
+    const firstT2I = defaultT2IModel();
     const ars = getAspectRatiosForModel(firstT2I.id);
     const resolutions = getResolutionsForModel(firstT2I.id);
     setSelectedModelId(firstT2I.id);
@@ -730,7 +734,7 @@ export default function ImageStudio({ apiKey, onGenerationComplete, historyItems
     setPrompt("");
     setUploadedImageUrls([]);
     setImageMode(false);
-    const firstT2I = t2iModels[0];
+    const firstT2I = defaultT2IModel();
     const ars = getAspectRatiosForModel(firstT2I.id);
     const resolutions = getResolutionsForModel(firstT2I.id);
     setSelectedModelId(firstT2I.id);
@@ -747,6 +751,10 @@ export default function ImageStudio({ apiKey, onGenerationComplete, historyItems
     if (imageMode) {
       if (uploadedImageUrls.length === 0) {
         alert("Please upload a reference image first.");
+        return;
+      }
+      if (isFreeMode) {
+        alert("Image editing needs a Muapi API key (add one in Settings). Text-to-image is free — clear the uploaded image to switch back.");
         return;
       }
     } else {
@@ -879,6 +887,7 @@ export default function ImageStudio({ apiKey, onGenerationComplete, historyItems
               src={currentImageUrl}
               alt={history[activeHistoryIdx]?.prompt || "Generated image"}
               className="max-h-[60vh] max-w-[80vw] rounded-3xl shadow-3xl border border-white/10 interactive-glow object-contain"
+              onError={() => setGenerateError("Image failed to load — the free provider may be busy. Wait a bit and retry.")}
             />
           </div>
 

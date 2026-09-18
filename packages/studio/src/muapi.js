@@ -1,4 +1,5 @@
 import { getModelById, getVideoModelById, getI2IModelById, getI2VModelById, getV2VModelById, getLipSyncModelById } from './models.js';
+import { freeapi } from './freeapi.js';
 
 const BASE_URL = 'https://api.muapi.ai';
 
@@ -47,6 +48,10 @@ async function submitAndPoll(endpoint, payload, key, onRequestId, maxAttempts = 
 }
 
 export async function generateImage(apiKey, params) {
+    // Free mode: no API key + plain text-to-image -> Pollinations backend.
+    if (!apiKey && !params.image_url) {
+        return freeapi.generateImage(params);
+    }
     const modelInfo = getModelById(params.model);
     const endpoint = modelInfo?.endpoint || params.model;
     const payload = { prompt: params.prompt };

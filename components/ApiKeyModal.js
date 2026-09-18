@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-export default function ApiKeyModal({ onSave }) {
+export default function ApiKeyModal({ onSave, onSkip }) {
   const [key, setKey] = useState('');
   const [error, setError] = useState('');
 
@@ -26,7 +26,8 @@ export default function ApiKeyModal({ onSave }) {
             Open Higgsfield AI
           </h1>
           <p className="text-white/40 text-sm">
-            Enter your <a href="https://muapi.ai" target="_blank" rel="noreferrer" className="text-[#d9ff00] hover:underline">Muapi.ai</a> API key to start generating
+            Enter your <a href="https://muapi.ai" target="_blank" rel="noreferrer" className="text-[#d9ff00] hover:underline">Muapi.ai</a> API key for full access — video, lip-sync &amp; image editing.<br />
+            <span className="text-white/60">No key? Continue free for AI image generation.</span>
           </p>
         </div>
 
@@ -53,6 +54,17 @@ export default function ApiKeyModal({ onSave }) {
           >
             Launch Studio
           </button>
+
+          {onSkip && (
+            <button
+              type="button"
+              onClick={onSkip}
+              className="w-full bg-white/5 text-white/70 font-bold py-3 rounded-xl hover:bg-white/10 transition-colors"
+              suppressHydrationWarning
+            >
+              Continue without a key — free images only
+            </button>
+          )}
 
           <p className="text-center text-xs text-white/30">
             Don&apos;t have a key?{' '}

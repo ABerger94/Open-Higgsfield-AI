@@ -15,6 +15,7 @@ const STORAGE_KEY = 'muapi_key';
 
 export default function StandaloneShell() {
   const [apiKey, setApiKey] = useState(null);
+  const [freeMode, setFreeMode] = useState(false); // entered without a key: free image generation only
   const [activeTab, setActiveTab] = useState('image');
   const [showSettings, setShowSettings] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
@@ -28,11 +29,18 @@ export default function StandaloneShell() {
   const handleKeySave = useCallback((key) => {
     localStorage.setItem(STORAGE_KEY, key);
     setApiKey(key);
+    setFreeMode(false);
+  }, []);
+
+  const handleSkipKey = useCallback(() => {
+    // No key: Image Studio runs on the free backend; other studios need a key.
+    setFreeMode(true);
   }, []);
 
   const handleKeyChange = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
     setApiKey(null);
+    setFreeMode(false); // back to the key gate, where they can enter a key or skip again
   }, []);
 
   if (!hasMounted) return (
@@ -41,8 +49,8 @@ export default function StandaloneShell() {
     </div>
   );
 
-  if (!apiKey) {
-    return <ApiKeyModal onSave={handleKeySave} />;
+  if (!apiKey && !freeMode) {
+    return <ApiKeyModal onSave={handleKeySave} onSkip={handleSkipKey} />;
   }
 
   return (
@@ -94,15 +102,21 @@ export default function StandaloneShell() {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div className="bg-[#111] border border-white/10 rounded-2xl p-8 w-full max-w-md">
             <h2 className="text-white font-bold text-xl mb-6">Settings</h2>
-            <p className="text-white/50 text-sm mb-4">
-              Current API key: <span className="text-white/80 font-mono">{apiKey.slice(0, 8)}••••••••</span>
-            </p>
+            {apiKey ? (
+              <p className="text-white/50 text-sm mb-4">
+                Current API key: <span className="text-white/80 font-mono">{apiKey.slice(0, 8)}••••••••</span>
+              </p>
+            ) : (
+              <p className="text-white/50 text-sm mb-4">
+                No API key — running in <span className="text-[#d9ff00]">free mode</span> (text-to-image only).
+              </p>
+            )}
             <div className="flex gap-3">
               <button
                 onClick={handleKeyChange}
                 className="flex-1 py-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 text-sm transition-colors"
               >
-                Change API Key
+                {apiKey ? 'Change API Key' : 'Add API Key'}
               </button>
               <button
                 onClick={() => setShowSettings(false)}
